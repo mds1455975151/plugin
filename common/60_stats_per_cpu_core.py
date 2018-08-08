@@ -7,34 +7,42 @@ import json
 metric = ['usr', 'nice', 'sys', 'idle', 'iowait', 'irq', 'soft', 'steal', 'guest']
 host = socket.gethostname()
 
+def get_endpoint():
+    f = open("/usr/local/open-falcon/agent/config/cfg.json")
+    setting = json.load(f)
+    endpoint = setting['hostname']
+    return endpoint
+
 def get_cpu_core_stat(num):
-  data = []
-  for x in range(num):
-    try:
-      handler = os.popen("cat /proc/stat | grep cpu%d " % x)
-    except:
-      continue
+    data = []
+    for x in range(num):
+        try:
+            handler = os.popen("cat /proc/stat | grep cpu%d " % x)
+        except:
+            continue
 
-    output = handler.read().strip().split()[1:]
+        output = handler.read().strip().split()[1:]
 
-    if len(output) != 9:
-      continue
+        if len(output) != 9:
+            continue
 
-    index=0
-    for m in output:
-      t = {}
-      t['metric'] = 'cpu.core.%s' % metric[index]
-      t['endpoint'] = host
-      t['timestamp'] = int(time.time())
-      t['step'] = 60
-      t['counterType'] = 'COUNTER'
-      t['tags'] = 'core=%s' % str(x)
-      t['value'] = m
-      index += 1
-      data.append(t)
+        index = 0
+        for m in output:
+            t = {}
+            t['metric'] = 'cpu.core.%s' % metric[index]
+            # t['endpoint'] = host
+            t['endpoint'] = get_endpoint()
+            t['timestamp'] = int(time.time())
+            t['step'] = 60
+            t['counterType'] = 'COUNTER'
+            t['tags'] = 'core=%s' % str(x)
+            t['value'] = m
+            index += 1
+            data.append(t)
 
-  return data
+    return data
+
 
 if __name__ == "__main__":
-  core_total = int(os.popen("cat /proc/cpuinfo | grep processor | tail -1 | cut -d' ' -f2").read().strip()) + 1
-  print json.dumps(get_cpu_core_stat(core_total))
+    core_total = int(os.popen("cat /proc/cpuinfo | grep processor | tail -1 | cut -d' ' -f2").read().strip()) + 1
+    print json.dumps(get_cpu_core_stat(core_total))

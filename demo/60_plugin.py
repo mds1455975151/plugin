@@ -4,6 +4,14 @@
 import json
 import time
 
+
+def get_endpoint():
+    f = open("/usr/local/open-falcon/agent/config/cfg.json")
+    setting = json.load(f)
+    endpoint = setting['hostname']
+    return endpoint
+
+
 data = [
     {
         'metric': 'plugins.xx',

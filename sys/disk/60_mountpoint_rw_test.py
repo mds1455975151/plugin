@@ -9,6 +9,7 @@ import time
 
 data = []
 
+
 def get_all_mountpoint():
     raw_data = Popen(['df', '-P'], stdout=PIPE, stderr=PIPE).communicate()[0].splitlines()
     mountpoints = []
@@ -18,6 +19,13 @@ def get_all_mountpoint():
             if element.startswith('/'):
                 mountpoints.append(element)
     return mountpoints
+
+
+def get_endpoint():
+    f = open("/usr/local/open-falcon/agent/config/cfg.json")
+    setting = json.load(f)
+    endpoint = setting['hostname']
+    return endpoint
 
 
 for path in get_all_mountpoint():
@@ -38,7 +46,8 @@ for path in get_all_mountpoint():
 
     record = {}
     record['metric'] = 'sys.disk.rw'
-    record['endpoint'] = os.uname()[1]
+    # record['endpoint'] = os.uname()[1]
+    record['endpoint'] = get_endpoint()
     record['timestamp'] = int(time.time())
     record['step'] = 60
     record['value'] = value

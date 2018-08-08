@@ -9,6 +9,7 @@ data = []
 queue_name = ('active', 'deferred', 'maildrop', 'incoming', 'corrupt', 'hold')
 spool_dir = '/var/spool/postfix/'
 
+
 def fetch_queue_length(queue):
     length = 0
     path = spool_dir + queue
@@ -16,16 +17,26 @@ def fetch_queue_length(queue):
         length += len(files)
     return length
 
+
+def get_endpoint():
+    f = open("/usr/local/open-falcon/agent/config/cfg.json")
+    setting = json.load(f)
+    endpoint = setting['hostname']
+    return endpoint
+
+
 def create_record(queue, value):
     record = {}
     record['metric'] = 'sys.mail.queue.%s' % queue
-    record['endpoint'] = os.uname()[1]
+    # record['endpoint'] = os.uname()[1]
+    record['endpoint'] = get_endpoint()
     record['timestamp'] = int(time.time())
     record['step'] = 60
     record['value'] = int(value)
     record['counterType'] = 'GAUGE'
     record['tags'] = ''
     data.append(record)
+
 
 for queue in queue_name:
     create_record(queue, fetch_queue_length(queue))
